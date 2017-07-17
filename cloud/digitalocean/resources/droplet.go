@@ -104,6 +104,10 @@ func (r *Droplet) Apply(actual, expected cloud.Resource, applyCluster *cluster.C
 		return nil, err
 	}
 
+	sshId, err := strconv.Atoi(applyCluster.Ssh.Identifier)
+	if err != nil {
+		return nil, err
+	}
 	createRequest := &godo.DropletCreateRequest{
 		Name:   expected.(*Droplet).Name,
 		Region: expected.(*Droplet).Region,
@@ -115,7 +119,7 @@ func (r *Droplet) Apply(actual, expected cloud.Resource, applyCluster *cluster.C
 		PrivateNetworking: true,
 		SSHKeys: []godo.DropletCreateSSHKey{
 			{
-				Fingerprint: expected.(*Droplet).SShFingerprint,
+				ID: sshId,
 			},
 		},
 		UserData: string(userData),
