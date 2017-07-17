@@ -1,7 +1,6 @@
 package digitalocean
 
 import (
-	"fmt"
 	"github.com/kris-nova/kubicorn/apis/cluster"
 	"github.com/kris-nova/kubicorn/cloud"
 	"github.com/kris-nova/kubicorn/cloud/digitalocean/godoSdk"
@@ -30,12 +29,6 @@ func NewReconciler(expected *cluster.Cluster) cloud.Reconciler {
 var model map[int]cloud.Resource
 
 func (r *Reconciler) Init() error {
-
-	// Disable DO and hack for go vet...
-	if true {
-		return fmt.Errorf("Digital Ocean not yet supported, but close!")
-	}
-
 	sdk, err := godoSdk.NewSdk()
 	if err != nil {
 		return err

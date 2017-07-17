@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/digitalocean/godo"
 	"github.com/kris-nova/kubicorn/apis/cluster"
+	"github.com/kris-nova/kubicorn/bootstrap"
 	"github.com/kris-nova/kubicorn/cloud"
 	"github.com/kris-nova/kubicorn/cutil/compare"
 	"github.com/kris-nova/kubicorn/logger"
@@ -52,6 +53,7 @@ func (r *Droplet) Actual(known *cluster.Cluster) (cloud.Resource, error) {
 		actual.Region = droplet.Region.Name
 		actual.Image = droplet.Image.Slug
 	}
+	actual.SShFingerprint = known.Ssh.PublicKeyFingerprint
 	actual.Count = r.ServerPool.MaxCount
 	actual.Name = r.Name
 	r.CachedActual = actual
@@ -69,10 +71,11 @@ func (r *Droplet) Expected(known *cluster.Cluster) (cloud.Resource, error) {
 			Name:    r.Name,
 			CloudID: r.ServerPool.Identifier,
 		},
-		Size:   r.ServerPool.Size,
-		Region: known.Location,
-		Image:  r.ServerPool.Image,
-		Count:  r.ServerPool.MaxCount,
+		Size:           r.ServerPool.Size,
+		Region:         known.Location,
+		Image:          r.ServerPool.Image,
+		Count:          r.ServerPool.MaxCount,
+		SShFingerprint: known.Ssh.PublicKeyFingerprint,
 	}
 	r.CachedExpected = expected
 	return expected, nil
@@ -88,6 +91,18 @@ func (r *Droplet) Apply(actual, expected cloud.Resource, applyCluster *cluster.C
 	if isEqual {
 		return applyResource, nil
 	}
+	var userData []byte
+	userData, err = bootstrap.Asset(fmt.Sprintf("bootstrap/%s", r.ServerPool.BootstrapScript))
+	if err != nil {
+		return nil, err
+	}
+
+	//fmt.Println(string(userData))
+	applyCluster.Values.ItemMap["INJECTEDPORT"] = applyCluster.KubernetesApi.Port
+	userData, err = bootstrap.Inject(userData, applyCluster.Values.ItemMap)
+	if err != nil {
+		return nil, err
+	}
 
 	createRequest := &godo.DropletCreateRequest{
 		Name:   expected.(*Droplet).Name,
@@ -98,9 +113,12 @@ func (r *Droplet) Apply(actual, expected cloud.Resource, applyCluster *cluster.C
 		},
 		Tags:              []string{expected.(*Droplet).Name},
 		PrivateNetworking: true,
-		//SSHKeys: []godo.DropletCreateSSHKey{
-		//	Fingerprint: "",
-		//},
+		SSHKeys: []godo.DropletCreateSSHKey{
+			{
+				Fingerprint: expected.(*Droplet).SShFingerprint,
+			},
+		},
+		UserData: string(userData),
 	}
 	droplet, _, err := Sdk.Client.Droplets.Create(context.TODO(), createRequest)
 	if err != nil {
