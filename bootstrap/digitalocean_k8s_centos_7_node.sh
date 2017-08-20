@@ -11,6 +11,7 @@ cd ~
 #
 TOKEN="INJECTEDTOKEN"
 MASTER="INJECTEDMASTER"
+KUBEADM_VERSION="INJECTEDKUBEADMVERSION"
 # ------------------------------------------------------------------------------------------------------------------------
 
 sudo rpm --import https://packages.cloud.google.com/yum/doc/yum-key.gpg
@@ -35,7 +36,7 @@ sudo sudo yum install -y \
      socat \
      ebtables \
      kubelet \
-     kubeadm
+     kubeadm=${KUBEADM_VERSION}
 
 sudo systemctl enable docker
 sudo systemctl enable kubelet

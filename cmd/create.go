@@ -33,7 +33,9 @@ import (
 
 type CreateOptions struct {
 	Options
-	Profile string
+	Profile        string
+	KubeadmVersion string
+	K8SVersion     string
 }
 
 var co = &CreateOptions{}
@@ -69,6 +71,8 @@ func init() {
 	createCmd.Flags().StringVarP(&co.StateStore, "state-store", "s", strEnvDef("KUBICORN_STATE_STORE", "fs"), "The state store type to use for the cluster")
 	createCmd.Flags().StringVarP(&co.StateStorePath, "state-store-path", "S", strEnvDef("KUBICORN_STATE_STORE_PATH", "./_state"), "The state store path to use")
 	createCmd.Flags().StringVarP(&co.Profile, "profile", "p", strEnvDef("KUBICORN_PROFILE", "azure"), "The cluster profile to use")
+	createCmd.Flags().StringVarP(&co.Profile, "kubeadm-version", "k", strEnvDef("KUBICORN_KUBEADM_VERSION", "1.7.0-00"), "The kubeadm version used to install K8S")
+	createCmd.Flags().StringVarP(&co.Profile, "k8s-version", "K", strEnvDef("KUBICORN_K8S_VERSION", "v1.7.4"), "The K8S version to install")
 
 	flagApplyAnnotations(createCmd, "profile", "__kubicorn_parse_profiles")
 
@@ -127,9 +131,14 @@ func RunCreate(options *CreateOptions) error {
 
 	// Create our cluster resource
 	name := options.Name
-	var cluster *cluster.Cluster
+	var newCluster *cluster.Cluster
+	newCluster.K8SVersion = options.K8SVersion
+	newCluster.KubeadmVersion = options.KubeadmVersion
+	value := newCluster.Values
+	append(newCluster.Values, extraValues)
+	newCluster.Values = newCluster.Values
 	if _, ok := profileMapIndexed[options.Profile]; ok {
-		cluster = profileMapIndexed[options.Profile].profileFunc(name)
+		newCluster = profileMapIndexed[options.Profile].profileFunc(name)
 	} else {
 		return fmt.Errorf("Invalid profile [%s]", options.Profile)
 	}
@@ -155,7 +164,7 @@ func RunCreate(options *CreateOptions) error {
 	}
 
 	// Init new state store with the cluster resource
-	err := stateStore.Commit(cluster)
+	err := stateStore.Commit(newCluster)
 	if err != nil {
 		return fmt.Errorf("Unable to init state store: %v", err)
 	}

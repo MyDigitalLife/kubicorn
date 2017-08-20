@@ -11,6 +11,8 @@ cd ~
 #
 TOKEN="INJECTEDTOKEN"
 PORT="INJECTEDPORT"
+KUBEADM_VERSION="INJECTEDKUBEADMVERSION"
+K8S_VERSION="INJECTEDK8SVERSION"
 #
 #
 # ------------------------------------------------------------------------------------------------------------------------
@@ -37,7 +39,7 @@ sudo sudo yum install -y \
      socat \
      ebtables \
      kubelet \
-     kubeadm \
+     kubeadm=${KUBEADM_VERSION} \
      cloud-utils
 
 systemctl enable docker
@@ -53,7 +55,7 @@ sysctl -w net.bridge.bridge-nf-call-iptables=1
 sysctl -p
 
 kubeadm reset
-kubeadm init --apiserver-bind-port ${PORT} --token ${TOKEN}  --apiserver-advertise-address ${PUBLICIP} --apiserver-cert-extra-sans ${PUBLICIP} ${PRIVATEIP}
+kubeadm init --apiserver-bind-port ${PORT} --token ${TOKEN} --kubernetes-version ${K8S_VERSION} --apiserver-advertise-address ${PUBLICIP} --apiserver-cert-extra-sans ${PUBLICIP} ${PRIVATEIP}
 
 kubectl apply \
   -f http://docs.projectcalico.org/v2.3/getting-started/kubernetes/installation/hosted/kubeadm/1.6/calico.yaml \

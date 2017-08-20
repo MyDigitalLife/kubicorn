@@ -11,6 +11,8 @@ cd ~
 #
 TOKEN="INJECTEDTOKEN"
 PORT="INJECTEDPORT"
+KUBEADM_VERSION="INJECTEDKUBEADMVERSION"
+K8S_VERSION="INJECTEDK8SVERSION"
 #
 #
 # ------------------------------------------------------------------------------------------------------------------------
@@ -39,7 +41,7 @@ sudo sudo yum install -y \
      socat \
      ebtables \
      kubelet \
-     kubeadm \
+     kubeadm=${KUBEADM_VERSION} \
      cloud-utils
 
 sudo systemctl enable docker
@@ -54,7 +56,7 @@ sudo sysctl -w net.bridge.bridge-nf-call-iptables=1
 sudo sysctl -p
 
 kubeadm reset
-kubeadm init --apiserver-bind-port ${PORT} --token ${TOKEN}  --apiserver-advertise-address ${PUBLICIP} --apiserver-cert-extra-sans ${PUBLICIP} ${PRIVATEIP}
+kubeadm init --apiserver-bind-port ${PORT} --token ${TOKEN} --kubernetes-version ${K8S_VERSION} --apiserver-advertise-address ${PUBLICIP} --apiserver-cert-extra-sans ${PUBLICIP} ${PRIVATEIP}
 
 # Thanks Kelsey :)
 kubectl apply \

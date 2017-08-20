@@ -11,6 +11,8 @@ cd ~
 #
 TOKEN="INJECTEDTOKEN"
 PORT="INJECTEDPORT"
+KUBEADM_VERSION="INJECTEDKUBEADMVERSION"
+K8S_VERSION="INJECTEDK8SVERSION"
 # ------------------------------------------------------------------------------------------------------------------------
 
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -24,7 +26,7 @@ apt-get install -y \
     docker.io \
     apt-transport-https \
     kubelet \
-    kubeadm=1.7.0-00 \
+    kubeadm=${KUBEADM_VERSION} \
     cloud-utils
 
 
@@ -35,7 +37,7 @@ PUBLICIP=$(ec2metadata --public-ipv4 | cut -d " " -f 2)
 PRIVATEIP=$(ip addr show dev eth0 | awk '/inet / {print $2}' | cut -d"/" -f1)
 
 kubeadm reset
-kubeadm init --apiserver-bind-port ${PORT} --token ${TOKEN}  --apiserver-advertise-address ${PUBLICIP} --apiserver-cert-extra-sans ${PUBLICIP} ${PRIVATEIP}
+kubeadm init --apiserver-bind-port ${PORT} --token ${TOKEN} --kubernetes-version ${K8S_VERSION} --apiserver-advertise-address ${PUBLICIP} --apiserver-cert-extra-sans ${PUBLICIP} ${PRIVATEIP}
 
 # Thanks Kelsey :)
 kubectl apply \

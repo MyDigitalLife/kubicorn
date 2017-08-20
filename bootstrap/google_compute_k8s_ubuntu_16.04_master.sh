@@ -11,6 +11,8 @@ cd ~
 #
 TOKEN="INJECTEDTOKEN"
 PORT="INJECTEDPORT"
+KUBEADM_VERSION="INJECTEDKUBEADMVERSION"
+K8S_VERSION="INJECTEDK8SVERSION"
 #
 #
 # ------------------------------------------------------------------------------------------------------------------------
@@ -26,7 +28,7 @@ apt-get install -y \
     docker.io \
     apt-transport-https \
     kubelet \
-    kubeadm=1.7.0-00 \
+    kubeadm=${KUBEADM_VERSION} \
     cloud-utils
 
 
@@ -38,7 +40,7 @@ echo $PRIVATEIP > /tmp/.ip
 PUBLICIP=`curl --retry 5 -sfH "Metadata-Flavor: Google" "http://metadata/computeMetadata/v1/instance/network-interfaces/0/access-configs/0/external-ip"`
 
 kubeadm reset
-kubeadm init --apiserver-bind-port ${PORT} --token ${TOKEN}  --apiserver-advertise-address ${PUBLICIP} --apiserver-cert-extra-sans ${PUBLICIP} ${PRIVATEIP}
+kubeadm init --apiserver-bind-port ${PORT} --token ${TOKEN} --kubernetes-version ${K8S_VERSION}  --apiserver-advertise-address ${PUBLICIP} --apiserver-cert-extra-sans ${PUBLICIP} ${PRIVATEIP}
 
 
 kubectl apply \

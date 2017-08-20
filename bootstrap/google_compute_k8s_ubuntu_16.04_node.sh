@@ -11,6 +11,7 @@ cd ~
 #
 TOKEN="INJECTEDTOKEN"
 MASTER="INJECTEDMASTER"
+KUBEADM_VERSION="INJECTEDKUBEADMVERSION"
 # ------------------------------------------------------------------------------------------------------------------------
 
 sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
@@ -24,7 +25,7 @@ sudo apt-get install -y \
     docker.io \
     apt-transport-https \
     kubelet \
-    kubeadm=1.7.0-00
+    kubeadm=${KUBEADM_VERSION}
 
 sudo systemctl enable docker
 sudo systemctl start docker
