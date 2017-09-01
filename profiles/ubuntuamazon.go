@@ -51,10 +51,14 @@ func NewUbuntuAmazonCluster(name string) *cluster.Cluster {
 				Name:     fmt.Sprintf("%s.master", name),
 				MaxCount: 1,
 				MinCount: 1,
-				Image:    "ami-835b4efa",
 				Size:     "t2.xlarge",
 				BootstrapScripts: []string{
 					"amazon_k8s_ubuntu_16.04_master.sh",
+				},
+				Disks: []*cluster.Disk{
+					{
+						Image: "ami-835b4efa",
+					},
 				},
 				Subnets: []*cluster.Subnet{
 					{
@@ -95,10 +99,14 @@ func NewUbuntuAmazonCluster(name string) *cluster.Cluster {
 				Name:     fmt.Sprintf("%s.node", name),
 				MaxCount: 1,
 				MinCount: 1,
-				Image:    "ami-835b4efa",
 				Size:     "t2.medium",
 				BootstrapScripts: []string{
 					"amazon_k8s_ubuntu_16.04_node.sh",
+				},
+				Disks: []*cluster.Disk{
+					{
+						Image: "ami-835b4efa",
+					},
 				},
 				Subnets: []*cluster.Subnet{
 					{

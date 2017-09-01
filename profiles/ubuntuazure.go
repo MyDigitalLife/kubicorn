@@ -44,9 +44,13 @@ func NewUbuntuAzureCluster(name string) *cluster.Cluster {
 				Type:             cluster.ServerPoolTypeMaster,
 				Name:             fmt.Sprintf("%s-master", name),
 				MaxCount:         1,
-				Image:            "UbuntuServer",
 				Size:             "Standard_DS3_v2 ",
 				BootstrapScripts: []string{},
+				Disks: []*cluster.Disk{
+					{
+						Image: "UbuntuServer",
+					},
+				},
 				Firewalls: []*cluster.Firewall{
 					{
 						Name: fmt.Sprintf("%s-master", name),
@@ -86,9 +90,13 @@ func NewUbuntuAzureCluster(name string) *cluster.Cluster {
 				Type:             cluster.ServerPoolTypeNode,
 				Name:             fmt.Sprintf("%s-node", name),
 				MaxCount:         1,
-				Image:            "UbuntuServer",
 				Size:             "Standard_DS3_v2 ",
 				BootstrapScripts: []string{},
+				Disks: []*cluster.Disk{
+					{
+						Image: "UbuntuServer",
+					},
+				},
 				Firewalls: []*cluster.Firewall{
 					{
 						Name: fmt.Sprintf("%s-node", name),

@@ -45,20 +45,37 @@ func NewUbuntuGoogleComputeCluster(name string) *cluster.Cluster {
 				Type:     cluster.ServerPoolTypeMaster,
 				Name:     fmt.Sprintf("%s-master", name),
 				MaxCount: 1,
-				Image:    "ubuntu-1604-xenial-v20170811",
-				Size:     "n1-standard-1",
+
+				Size: "n1-standard-1",
 				BootstrapScripts: []string{
 					"google_compute_k8s_ubuntu_16.04_master.sh",
+				},
+				Disks: []*cluster.Disk{
+					{
+						Image:    "ubuntu-1604-xenial-v20170811",
+						SizeGb:   25,
+						BootDisk: true,
+					},
+					{
+						SizeGb:   25,
+						BootDisk: false,
+					},
 				},
 			},
 			{
 				Type:     cluster.ServerPoolTypeNode,
 				Name:     fmt.Sprintf("%s-node", name),
 				MaxCount: 2,
-				Image:    "ubuntu-1604-xenial-v20170811",
 				Size:     "n1-standard-1",
 				BootstrapScripts: []string{
 					"google_compute_k8s_ubuntu_16.04_node.sh",
+				},
+				Disks: []*cluster.Disk{
+					{
+						Image:    "ubuntu-1604-xenial-v20170811",
+						SizeGb:   25,
+						BootDisk: true,
+					},
 				},
 			},
 		},

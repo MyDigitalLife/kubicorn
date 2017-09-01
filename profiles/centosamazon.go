@@ -50,10 +50,14 @@ func NewCentosAmazonCluster(name string) *cluster.Cluster {
 				Name:     fmt.Sprintf("%s.master", name),
 				MaxCount: 1,
 				MinCount: 1,
-				Image:    "ami-0c2aba6c",
 				Size:     "t2.xlarge",
 				BootstrapScripts: []string{
 					"amazon_k8s_centos_7_master.sh",
+				},
+				Disks: []*cluster.Disk{
+					{
+						Image: "ami-0c2aba6c",
+					},
 				},
 				Subnets: []*cluster.Subnet{
 					{
@@ -62,7 +66,6 @@ func NewCentosAmazonCluster(name string) *cluster.Cluster {
 						Location: "us-west-2a",
 					},
 				},
-
 				Firewalls: []*cluster.Firewall{
 					{
 						Name: fmt.Sprintf("%s.master-external-%s", name, uuid.TimeOrderedUUID()),
@@ -94,10 +97,14 @@ func NewCentosAmazonCluster(name string) *cluster.Cluster {
 				Name:     fmt.Sprintf("%s.node", name),
 				MaxCount: 1,
 				MinCount: 1,
-				Image:    "ami-0c2aba6c",
 				Size:     "t2.medium",
 				BootstrapScripts: []string{
 					"amazon_k8s_centos_7_node.sh",
+				},
+				Disks: []*cluster.Disk{
+					{
+						Image: "ami-0c2aba6c",
+					},
 				},
 				Subnets: []*cluster.Subnet{
 					{

@@ -83,7 +83,7 @@ func (r *Droplet) Actual(immutable *cluster.Cluster) (*cluster.Cluster, cloud.Re
 	newResource.SSHFingerprint = immutable.SSH.PublicKeyFingerprint
 	newResource.Name = r.ServerPool.Name
 	newResource.Count = r.ServerPool.MaxCount
-	newResource.Image = r.ServerPool.Image
+	newResource.Image = r.ServerPool.Disks[0].Image
 	newResource.Size = r.ServerPool.Size
 
 	newCluster := r.immutableRender(newResource, immutable)
@@ -99,7 +99,7 @@ func (r *Droplet) Expected(immutable *cluster.Cluster) (*cluster.Cluster, cloud.
 		},
 		Size:             r.ServerPool.Size,
 		Region:           immutable.Location,
-		Image:            r.ServerPool.Image,
+		Image:            r.ServerPool.Disks[0].Image,
 		Count:            r.ServerPool.MaxCount,
 		SSHFingerprint:   immutable.SSH.PublicKeyFingerprint,
 		BootstrapScripts: r.ServerPool.BootstrapScripts,
@@ -312,7 +312,7 @@ func (r *Droplet) immutableRender(newResource cloud.Resource, inaccurateCluster 
 	newCluster := defaults.NewClusterDefaults(inaccurateCluster)
 	serverPool := &cluster.ServerPool{}
 	serverPool.Type = r.ServerPool.Type
-	serverPool.Image = newResource.(*Droplet).Image
+	serverPool.Disks[0].Image = newResource.(*Droplet).Image
 	serverPool.Size = newResource.(*Droplet).Size
 	serverPool.Name = newResource.(*Droplet).Name
 	serverPool.MaxCount = newResource.(*Droplet).Count
@@ -320,7 +320,7 @@ func (r *Droplet) immutableRender(newResource cloud.Resource, inaccurateCluster 
 	found := false
 	for i := 0; i < len(newCluster.ServerPools); i++ {
 		if newCluster.ServerPools[i].Name == newResource.(*Droplet).Name {
-			newCluster.ServerPools[i].Image = newResource.(*Droplet).Image
+			newCluster.ServerPools[i].Disks[0].Image = newResource.(*Droplet).Image
 			newCluster.ServerPools[i].Size = newResource.(*Droplet).Size
 			newCluster.ServerPools[i].MaxCount = newResource.(*Droplet).Count
 			newCluster.ServerPools[i].BootstrapScripts = newResource.(*Droplet).BootstrapScripts

@@ -44,22 +44,30 @@ func NewCentosDigitalOceanCluster(name string) *cluster.Cluster {
 				Type:     cluster.ServerPoolTypeMaster,
 				Name:     fmt.Sprintf("%s-master", name),
 				MaxCount: 1,
-				Image:    "centos-7-x64",
 				Size:     "1gb",
 				BootstrapScripts: []string{
 					"vpn/openvpnMaster-centos.sh",
 					"digitalocean_k8s_centos_7_master.sh",
+				},
+				Disks: []*cluster.Disk{
+					{
+						Image: "centos-7-x64",
+					},
 				},
 			},
 			{
 				Type:     cluster.ServerPoolTypeNode,
 				Name:     fmt.Sprintf("%s-node", name),
 				MaxCount: 1,
-				Image:    "centos-7-x64",
 				Size:     "1gb",
 				BootstrapScripts: []string{
 					"vpn/openvpnNode-centos.sh",
 					"digitalocean_k8s_centos_7_node.sh",
+				},
+				Disks: []*cluster.Disk{
+					{
+						Image: "centos-7-x64",
+					},
 				},
 			},
 		},

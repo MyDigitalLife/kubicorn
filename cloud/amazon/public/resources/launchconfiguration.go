@@ -80,7 +80,7 @@ func (r *Lc) Actual(immutable *cluster.Cluster) (*cluster.Cluster, cloud.Resourc
 			"KubernetesCluster": immutable.Name,
 		}
 	} else {
-		newResource.Image = r.ServerPool.Image
+		newResource.Image = r.ServerPool.Disks[0].Image
 		newResource.InstanceType = r.ServerPool.Size
 		if r.ServerPool.Type == cluster.ServerPoolTypeNode {
 			newResource.SpotPrice = r.ServerPool.SpotPrice
@@ -104,7 +104,7 @@ func (r *Lc) Expected(immutable *cluster.Cluster) (*cluster.Cluster, cloud.Resou
 			Name:       r.Name,
 		},
 		InstanceType:     r.ServerPool.Size,
-		Image:            r.ServerPool.Image,
+		Image:            r.ServerPool.Disks[0].Image,
 		BootstrapScripts: r.ServerPool.BootstrapScripts,
 	}
 	if r.ServerPool.Type == cluster.ServerPoolTypeNode {
@@ -280,13 +280,13 @@ func (r *Lc) immutableRender(newResource cloud.Resource, inaccurateCluster *clus
 	logger.Debug("lc.Render")
 	newCluster := defaults.NewClusterDefaults(inaccurateCluster)
 	serverPool := &cluster.ServerPool{}
-	serverPool.Image = newResource.(*Lc).Image
+	serverPool.Disks[0].Image = newResource.(*Lc).Image
 	serverPool.Size = newResource.(*Lc).InstanceType
 	serverPool.BootstrapScripts = newResource.(*Lc).BootstrapScripts
 	found := false
 	for i := 0; i < len(newCluster.ServerPools); i++ {
 		if newCluster.ServerPools[i].Name == newResource.(*Lc).Name {
-			newCluster.ServerPools[i].Image = newResource.(*Lc).Image
+			newCluster.ServerPools[i].Disks[0].Image = newResource.(*Lc).Image
 			newCluster.ServerPools[i].Size = newResource.(*Lc).InstanceType
 			newCluster.ServerPools[i].BootstrapScripts = newResource.(*Lc).BootstrapScripts
 			found = true

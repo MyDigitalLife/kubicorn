@@ -37,7 +37,6 @@ type InstanceGroup struct {
 	Shared
 	Location         string
 	Size             string
-	Image            string
 	Count            int
 	SSHFingerprint   string
 	BootstrapScripts []string
@@ -80,7 +79,6 @@ func (r *InstanceGroup) Actual(immutable *cluster.Cluster) (*cluster.Cluster, cl
 			newResource.Name = instance.Name
 			newResource.CloudID = string(instance.Id)
 			newResource.Size = instance.Kind
-			newResource.Image = r.Image
 			newResource.Location = instance.Zone
 		}
 	}
@@ -106,7 +104,6 @@ func (r *InstanceGroup) Expected(immutable *cluster.Cluster) (*cluster.Cluster, 
 		},
 		Size:             r.ServerPool.Size,
 		Location:         immutable.Location,
-		Image:            r.ServerPool.Image,
 		Count:            r.ServerPool.MaxCount,
 		SSHFingerprint:   immutable.SSH.PublicKeyFingerprint,
 		BootstrapScripts: r.ServerPool.BootstrapScripts,
@@ -207,26 +204,35 @@ func (r *InstanceGroup) Apply(actual, expected cloud.Resource, immutable *cluste
 	}
 
 	prefix := "https://www.googleapis.com/compute/v1/projects/" + immutable.CloudId
-	imageURL := "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/" + expected.(*InstanceGroup).Image
+	baseImageURL := "https://www.googleapis.com/compute/v1/projects/ubuntu-os-cloud/global/images/"
 
 	templateInstance, err := Sdk.Service.InstanceTemplates.Get(immutable.CloudId, strings.ToLower(expected.(*InstanceGroup).Name)).Do()
 	if err != nil {
 		sshPublicKeyValue := fmt.Sprintf("%s:%s", immutable.SSH.User, string(immutable.SSH.PublicKeyData))
 
+		disks := []*compute.AttachedDisk{}
+		for _, disk := range r.ServerPool.Disks {
+			imageUrl := ""
+			if disk.Image != "" {
+				imageUrl = baseImageURL + disk.Image
+			}
+			newDisk := &compute.AttachedDisk{
+				AutoDelete: true,
+				Boot:       disk.BootDisk,
+				Type:       "PERSISTENT",
+				InitializeParams: &compute.AttachedDiskInitializeParams{
+					SourceImage: imageUrl,
+					DiskSizeGb:  disk.SizeGb,
+				},
+			}
+			disks = append(disks, newDisk)
+		}
+
 		templateInstance = &compute.InstanceTemplate{
 			Name: strings.ToLower(expected.(*InstanceGroup).Name),
 			Properties: &compute.InstanceProperties{
 				MachineType: expected.(*InstanceGroup).Size,
-				Disks: []*compute.AttachedDisk{
-					{
-						AutoDelete: true,
-						Boot:       true,
-						Type:       "PERSISTENT",
-						InitializeParams: &compute.AttachedDiskInitializeParams{
-							SourceImage: imageURL,
-						},
-					},
-				},
+				Disks:       disks,
 				NetworkInterfaces: []*compute.NetworkInterface{
 					{
 						AccessConfigs: []*compute.AccessConfig{
@@ -300,7 +306,6 @@ func (r *InstanceGroup) Apply(actual, expected cloud.Resource, immutable *cluste
 			Name: r.ServerPool.Name,
 			//CloudID: id,
 		},
-		Image:            expected.(*InstanceGroup).Image,
 		Size:             expected.(*InstanceGroup).Size,
 		Location:         expected.(*InstanceGroup).Location,
 		Count:            expected.(*InstanceGroup).Count,
